@@ -22,3 +22,10 @@ Route::get('v0/user/{userId}/profiles', 'V0\UserProfilesController@show_profiles
 Route::get('v0/users/profiles', 'V0\UserProfilesController@show_profiles_5_per_page');
 Route::patch('v0/users/profile/{id}', 'V0\UserProfilesController@update_profile');
 Route::delete('v0/users/profile/{id}','V0\UserProfilesController@delete_profile');
+
+
+Route::get('v0/db/users/profile/{id}', 'V0\UserProfilesController@show_profile_db');
+Route::get('v0/db/user/{userId}/profiles', 'V0\UserProfilesController@show_profiles_db');
+Route::get('v0/db/users/profiles', 'V0\UserProfilesController@show_profiles_5_per_page_db');
+Route::patch('v0/db/users/profile/{id}', 'V0\UserProfilesController@update_profile_db');
+Route::delete('v0/db/users/profile/{id}','V0\UserProfilesController@delete_profile_db');
