@@ -17,15 +17,15 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('v0/users/profile/{id}', 'V0\UserProfilesController@show_profile');
-Route::get('v0/user/{userId}/profiles', 'V0\UserProfilesController@show_profiles');
-Route::get('v0/users/profiles', 'V0\UserProfilesController@show_profiles_5_per_page');
-Route::patch('v0/users/profile/{id}', 'V0\UserProfilesController@update_profile');
-Route::delete('v0/users/profile/{id}','V0\UserProfilesController@delete_profile');
+Route::get('v0/users/profile/{id}', 'V0\UserProfilesController@showProfile');
+Route::get('v0/user/{userId}/profiles', 'V0\UserProfilesController@showProfiles');
+Route::get('v0/users/profiles', 'V0\UserProfilesController@showProfilesPerPage');
+Route::patch('v0/users/profile/{id}', 'V0\UserProfilesController@updateProfile');
+Route::delete('v0/users/profile/{id}','V0\UserProfilesController@deleteProfile');
 
 
-Route::get('v0/db/users/profile/{id}', 'V0\UserProfilesController@show_profile_db');
-Route::get('v0/db/user/{userId}/profiles', 'V0\UserProfilesController@show_profiles_db');
-Route::get('v0/db/users/profiles', 'V0\UserProfilesController@show_profiles_5_per_page_db');
-Route::patch('v0/db/users/profile/{id}', 'V0\UserProfilesController@update_profile_db');
-Route::delete('v0/db/users/profile/{id}','V0\UserProfilesController@delete_profile_db');
+Route::get('v0/db/users/profile/{id}', 'V0\UserProfilesController@showProfileDB');
+Route::get('v0/db/user/{userId}/profiles', 'V0\UserProfilesController@showProfilesDB');
+Route::get('v0/db/users/profiles', 'V0\UserProfilesController@showProfilesPerPageDB');
+Route::patch('v0/db/users/profile/{id}', 'V0\UserProfilesController@updateProfileDB');
+Route::delete('v0/db/users/profile/{id}','V0\UserProfilesController@deleteProfileDB');

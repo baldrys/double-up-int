@@ -10,165 +10,241 @@ use Illuminate\Support\Facades\DB;
 
 class UserProfilesController extends Controller
 {
+    protected const NUMBER_OF_PROFILES = 5;
 
-    // 1. роут GET api/v0/users/profile/{id}
-    public function show_profile($id)
+    /**
+     * 
+     * 1. роут GET api/v0/users/profile/{id}
+     * возвращает профиль пользователя
+     * 
+     * @param  int $id
+     *
+     * @return JSON 
+     * 
+     */
+    public function showProfile($id)
     {
-        $user_profile = UserProfile::find($id);
-        if (!$user_profile){
+        $userProfile = UserProfile::find($id);
+        if (!$userProfile){
             abort(404, "Профиль пользователя с id = $id не найден");
         }
         return response()->json([
             'success' => true, 
             'data' => [
-                'profile' => $user_profile,
+                'profile' => $userProfile,
                 ]
             ]);
     }
-
-    // 2. роут GET api/v0/user/{userId}/profiles
-    public function show_profiles($id)
+    
+    /**
+     * 2. роут GET api/v0/user/{userId}/profiles
+     * возвращает все профили пользователя
+     * 
+     * @param  int $id
+     *
+     * @return JSON
+     */
+    public function showProfiles($id)
     {   
         $user = User::find($id);
         if(!$user){
             abort(404, "Пользователь с id = $id не найден");
         }
-        $user_profiles = UserProfile::where('user_id', '=', $id)->get();
+        $userProfile = UserProfile::where('user_id', $id)->get();
         return response()->json([
             'success' => true, 
             'data' => [
-                'profiles' =>$user_profiles,
+                'profiles' =>$userProfile,
                 ]
             ]);
     }
 
-    // 3. роут GET api/v0/users/profiles
-    // возвращает все профили по 5 на страницу, если профилей нет - пустой массив
-    // Параметры: 1. page обязательно >= 1
-    public function show_profiles_5_per_page(Request $request)
+
+    /**
+     * 3. роут GET api/v0/users/profiles
+     * возвращает все профили по 5 на страницу, если профилей нет - пустой массив
+     * Параметры: 1. page обязательно >= 1
+     *
+     * @param  Request $request
+     *
+     * @return JSON
+     */
+    public function showProfilesPerPage(Request $request)
     {
         $page = $request->get('page');
         if ($page < 1) {
-            abort(404, "Недопустимый номер страницы $page");
+            abort(400, "Bad Request");
         }
-        $user_profiles = UserProfile::paginate(5)->items();
+        $userProfiles = UserProfile::paginate(self::NUMBER_OF_PROFILES)->items();
         return response()->json([
             'success' => true, 
             'data' => [
-                'profiles' =>$user_profiles,
+                'profiles' =>$userProfiles,
                 ]
             ]);
     }
 
-    // 4. роут PATCH api/v0/users/profile/{id}
-    // Параметры: 1 name - обновляет имя профиля
-    public function update_profile($id, Request $request)
+
+    /**
+     * 4. роут PATCH api/v0/users/profile/{id}
+     * Параметры: 1 name - обновляет имя профиля
+     *
+     * @param  int $id
+     * @param  Request $request
+     *
+     * @return JSON
+     */
+    public function updateProfile($id, Request $request)
     {
         $name = $request->get('name');
-        $user_profile = UserProfile::find($id);
-        if (!$user_profile){
+        $userProfile = UserProfile::find($id);
+        if (!$userProfile){
             abort(404, "Профиль пользователя с id = $id не найден");
         }
         if (!$name){
-            abort(404, "Имя не было передано!");
+            abort(400, "Bad Request");
         }
-        $user_profile->name = $name;
-        $user_profile->save();
+        $userProfile->name = $name;
+        $userProfile->save();
         return response()->json([
             'success' => true, 
             'data' => [
-                'profile' => $user_profile,
+                'profile' => $userProfile,
                 ]
             ]);
     }
 
-    // 5. роут DELETE api/v0/users/profile/{id}
-    public function delete_profile($id)
+    /**
+     * 5. роут DELETE api/v0/users/profile/{id}
+     *
+     * @param  int $id
+     *
+     * @return JSON
+     */
+    public function deleteProfile($id)
     {
-        $user_profile = UserProfile::find($id);
-        if (!$user_profile){
+        $userProfile = UserProfile::find($id);
+        if (!$userProfile){
             abort(404, "Профиль пользователя с id = $id не найден");
         }
         $user->delete();
         return response()->json(['success' => true]);
     }
     
-    // 6. роут GET api/v0/db/users/profile/{id}
-    public function show_profile_db($id)
+    /**
+     * 
+     * 6. роут GET api/v0/db/users/profile/{id}
+     * возвращает профиль пользователя
+     * 
+     * @param  int $id
+     *
+     * @return JSON 
+     * 
+     */
+    public function showProfileDB($id)
     {
-        $user_profile = DB::table('user_profiles')->where('id', $id)->first();
-        if (!$user_profile){
+        $userProfile = DB::table('user_profiles')->where('id', $id)->first();
+        if (!$userProfile){
             abort(404, "Профиль пользователя с id = $id не найден");
         }
         return response()->json([
             'success' => true, 
             'data' => [
-                'profile' => $user_profile,
+                'profile' => $userProfile,
                 ]
             ]);
     }
 
-    // 7. роут GET api/v0/db/user/{userId}/profiles
-    public function show_profiles_db($id)
+    /**
+     * 7. роут GET api/v0/db/user/{userId}/profiles
+     * возвращает все профили пользователя
+     * 
+     * @param  int $id
+     *
+     * @return JSON
+     */
+    public function showProfilesDB($id)
     {   
 
         $user = DB::table('users')->where('id', $id)->first();
         if(!$user){
             abort(404, "Пользователь с id = $id не найден");
         }
-        $user_profiles = DB::table('user_profiles')->where('user_id', $id)->get();
+        $userProfiles = DB::table('user_profiles')->where('user_id', $id)->get();
         return response()->json([
             'success' => true, 
             'data' => [
-                'profiles' =>$user_profiles,
+                'profiles' =>$userProfiles,
                 ]
             ]);
     }
 
-    // 8. роут GET api/v0/db/users/profiles
-    public function show_profiles_5_per_page_db(Request $request)
+    /**
+     * 8. роут GET api/v0/db/users/profiles
+     * возвращает все профили по 5 на страницу, если профилей нет - пустой массив
+     * Параметры: 1. page обязательно >= 1
+     *
+     * @param  Request $request
+     *
+     * @return JSON
+     */
+    public function showProfilesPerPageDB(Request $request)
     {
         $page = $request->get('page');
         if ($page < 1) {
-            abort(404, "Недопустимый номер страницы $page");
+            abort(400, "Bad Request");
         }
-        $user_profiles = DB::table('user_profiles')->paginate(5)->items();
+        $userProfiles = DB::table('user_profiles')->paginate(self::NUMBER_OF_PROFILES)->items();
         return response()->json([
             'success' => true, 
             'data' => [
-                'profiles' =>$user_profiles,
+                'profiles' =>$userProfiles,
                 ]
             ]);
     }
 
-    // 9. роут PATCH api/v0/db/users/profile/{id}
-    public function update_profile_db($id, Request $request)
+    /**
+     * 9. роут PATCH api/v0/db/users/profile/{id}
+     * Параметры: 1 name - обновляет имя профиля
+     *
+     * @param  int $id
+     * @param  Request $request
+     *
+     * @return JSON
+     */
+    public function updateProfileDB($id, Request $request)
     {
         $name = $request->get('name');
-        $user_profile = DB::table('user_profiles')->where('id', $id)->first();
-        if (!$user_profile){
+        $userProfile = DB::table('user_profiles')->where('id', $id)->first();
+        if (!$userProfile){
             abort(404, "Профиль пользователя с id = $id не найден");
         }
         if (!$name){
-            abort(404, "Имя не было передано!");
+            abort(400, "Bad Request");
         }
         DB::table('user_profiles')
             ->where('id', $id)
             ->update(['name' => $name]);
-        $updated_user_profile = DB::table('user_profiles')->where('id', $id)->first();
+        $updatedUserProfile = DB::table('user_profiles')->where('id', $id)->first();
         return response()->json([
             'success' => true, 
             'data' => [
-                'profile' => updated_user_profile,
+                'profile' => $updatedUserProfile,
                 ]
             ]);
     }
 
-    // 10. роут DELETE api/v0/db/users/profile/{id}
-    public function delete_profile_db($id)
+    /**
+     * 10. роут DELETE api/v0/db/users/profile/{id}
+     *
+     * @param  int $id
+     *
+     * @return JSON
+     */
+    public function deleteProfileDB($id)
     {
-        $user_profile = DB::table('user_profiles')->where('id', $id)->first();
-        if (!$user_profile){
+        $userProfile = DB::table('user_profiles')->where('id', $id)->first();
+        if (!$userProfile){
             abort(404, "Профиль пользователя с id = $id не найден");
         }
         DB::table('user_profiles')->where('id', $id)->delete();
