@@ -7,12 +7,27 @@ use App\User;
 use App\UserProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Support\Task2Utils;
 
 class UserProfilesController extends Controller
 {
-    protected const NUMBER_OF_PROFILES = 5;
+    protected const PROFILES_PER_PAGE = 5;
 
+    /**
+     * Получает ассоциативный массив для заданной структуры
+     *
+     * @param  mixed  $data
+     * @param  string $dataName
+     *
+     * @return Array
+     */
+    public static function getSuccessArray($data, string $dataName){
+        return [
+            'success' => true, 
+            'data' => [
+                $dataName => $data,
+                ]
+            ];
+    }
     /**
      * 
      * 1. роут GET api/v0/users/profile/{id}
@@ -26,8 +41,10 @@ class UserProfilesController extends Controller
     public function showProfile($id)
     {
         $userProfile = UserProfile::find($id);
-        Task2Utils::validateData($userProfile,'!=', null, 404, "Профиль пользователя с id = $id не найден");
-        return response()->json(Task2Utils::getSuccessArray($userProfile, 'profile'));
+        if(!$userProfile){
+            abort(404, "Профиль пользователя с id = $id не найден");
+        }
+        return response()->json(UserProfilesController::getSuccessArray($userProfile, 'profile'));
     }
     
     /**
@@ -41,9 +58,12 @@ class UserProfilesController extends Controller
     public function showProfiles($id)
     {   
         $user = User::find($id);
-        Task2Utils::validateData($user, '!=', null, 404, "Пользователь с id = $id не найден");
+        $userProfile = UserProfile::find($id);
+        if(!$user){
+            abort(404, "Пользователь с id = $id не найден");
+        }
         $userProfiles = UserProfile::where('user_id', $id)->get();      
-        return response()->json(Task2Utils::getSuccessArray($userProfiles, 'profiles'));
+        return response()->json(UserProfilesController::getSuccessArray($userProfiles, 'profiles'));
     }
 
 
@@ -58,10 +78,10 @@ class UserProfilesController extends Controller
      */
     public function showProfilesPerPage(Request $request)
     {
+        $this->validate($request, ['page'=>'required|integer|min:1']);
         $page = $request->get('page');
-        Task2Utils::validateData($page, '>=', 1, 400, "Bad Request");
-        $userProfiles = UserProfile::paginate(self::NUMBER_OF_PROFILES)->items();
-        return response()->json(Task2Utils::getSuccessArray($userProfiles, 'profiles'));
+        $userProfiles = UserProfile::paginate(self::PROFILES_PER_PAGE)->items();
+        return response()->json(UserProfilesController::getSuccessArray($userProfiles, 'profiles'));
     }
 
 
@@ -76,13 +96,15 @@ class UserProfilesController extends Controller
      */
     public function updateProfile($id, Request $request)
     {
+        $this->validate($request,['name'=>'required']);
         $name = $request->get('name');
         $userProfile = UserProfile::find($id);
-        Task2Utils::validateData($userProfile, '!=', null, 404, "Профиль пользователя с id = $id не найден");
-        Task2Utils::validateData($name, '!=', null, 400, "Bad Request");
+        if(!$userProfile){
+            abort(404, "Профиль пользователя с id = $id не найден");
+        }
         $userProfile->name = $name;
         $userProfile->save();
-        return response()->json(Task2Utils::getSuccessArray($userProfile, 'profile'));
+        return response()->json(UserProfilesController::getSuccessArray($userProfile, 'profile'));
     }
 
     /**
@@ -95,7 +117,9 @@ class UserProfilesController extends Controller
     public function deleteProfile($id)
     {
         $userProfile = UserProfile::find($id);
-        Task2Utils::validateData($userProfile, '!=', null, 404, "Профиль пользователя с id = $id не найден");
+        if(!$userProfile){
+            abort(404, "Профиль пользователя с id = $id не найден");
+        }
         $user->delete();
         return response()->json(['success' => true]);
     }
@@ -113,8 +137,10 @@ class UserProfilesController extends Controller
     public function showProfileDB($id)
     {
         $userProfile = DB::table('user_profiles')->where('id', $id)->first();
-        Task2Utils::validateData($userProfile,'!=', null, 404, "Профиль пользователя с id = $id не найден");
-        return response()->json(Task2Utils::getSuccessArray($userProfile, 'profile'));
+        if(!$userProfile){
+            abort(404, "Профиль пользователя с id = $id не найден");
+        }
+        return response()->json(UserProfilesController::getSuccessArray($userProfile, 'profile'));
     }
 
     /**
@@ -128,9 +154,11 @@ class UserProfilesController extends Controller
     public function showProfilesDB($id)
     {   
         $user = DB::table('users')->where('id', $id)->first();
-        Task2Utils::validateData($user, '!=', null, 404, "Пользователь с id = $id не найден");
+        if(!$user){
+            abort(404, "Пользователь с id = $id не найден");
+        }
         $userProfiles = DB::table('user_profiles')->where('user_id', $id)->get();   
-        return response()->json(Task2Utils::getSuccessArray($userProfiles, 'profiles'));
+        return response()->json(UserProfilesController::getSuccessArray($userProfiles, 'profiles'));
     }
 
     /**
@@ -145,9 +173,9 @@ class UserProfilesController extends Controller
     public function showProfilesPerPageDB(Request $request)
     {
         $page = $request->get('page');
-        Task2Utils::validateData($page, '>=', 1, 400, "Bad Request");
-        $userProfiles = DB::table('user_profiles')->paginate(self::NUMBER_OF_PROFILES)->items();
-        return response()->json(Task2Utils::getSuccessArray($userProfiles, 'profiles'));
+        $this->validate($request,['page'=>'required|integer|min:1']);
+        $userProfiles = DB::table('user_profiles')->paginate(self::PROFILES_PER_PAGE)->items();
+        return response()->json(UserProfilesController::getSuccessArray($userProfiles, 'profiles'));
     }
 
     /**
@@ -161,15 +189,17 @@ class UserProfilesController extends Controller
      */
     public function updateProfileDB($id, Request $request)
     {
+        $this->validate($request,['name'=>'required']);
         $name = $request->get('name');
         $userProfile = DB::table('user_profiles')->where('id', $id)->first();
-        Task2Utils::validateData($userProfile, '!=', null, 404, "Профиль пользователя с id = $id не найден");
-        Task2Utils::validateData($name, '!=', null, 400, "Bad Request");
+        if(!$userProfile){
+            abort(404, "Профиль пользователя с id = $id не найден");
+        }
         DB::table('user_profiles')
             ->where('id', $id)
             ->update(['name' => $name]);
         $updatedUserProfile = DB::table('user_profiles')->where('id', $id)->first();
-        return response()->json(Task2Utils::getSuccessArray($updatedUserProfile, 'profile'));
+        return response()->json(UserProfilesController::getSuccessArray($updatedUserProfile, 'profile'));
     }
 
     /**
@@ -182,7 +212,9 @@ class UserProfilesController extends Controller
     public function deleteProfileDB($id)
     {
         $userProfile = DB::table('user_profiles')->where('id', $id)->first();
-        Task2Utils::validateData($userProfile, '!=', null, 404, "Профиль пользователя с id = $id не найден");
+        if(!$userProfile){
+            abort(404, "Профиль пользователя с id = $id не найден");
+        }
         DB::table('user_profiles')->where('id', $id)->delete();
         return response()->json(['success' => true]);
     }
