@@ -25,8 +25,8 @@ class UserProfileCollection extends ResourceCollection
             'profiles' =>
                 $this->collection->transform(function($userProfile){
                     return [
-                            'id' => $userProfile->id,
-                            'name' => $userProfile->name,
+                            'id'      => $userProfile->id,
+                            'name'    => $userProfile->name,
                             'user_id' => $userProfile->user_id,
                     ];
                 }),   

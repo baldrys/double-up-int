@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\UserProfile as UserProfileResource;
 use App\Http\Resources\UserProfileCollection;
-use App\Http\Requests\PageUserProfileRequest;
-use App\Http\Requests\NameUserProfileRequest;
+use App\Http\Requests\PageRequest;
+use App\Http\Requests\NameRequest;
 
 class UserProfilesController extends Controller
 {
@@ -53,11 +53,11 @@ class UserProfilesController extends Controller
      * возвращает все профили по 5 на страницу, если профилей нет - пустой массив
      * Параметры: 1. page обязательно >= 1
      *
-     * @param  PageUserProfileRequest $request
+     * @param  PageRequest $request
      *
      * @return JSON
      */
-    public function showProfilesPerPage(PageUserProfileRequest $request)
+    public function showProfilesPerPage(PageRequest $request)
     {
         $userProfiles = UserProfile::paginate(self::PROFILES_PER_PAGE)->except(['data']);
         return new UserProfileCollection($userProfiles);
@@ -68,12 +68,12 @@ class UserProfilesController extends Controller
      * 4. роут PATCH api/v0/users/profile/{userProfile}
      * Параметры: 1 name - обновляет имя профиля
      *
-     * @param  NameUserProfileRequest $userProfile
+     * @param  NameRequest $userProfile
      * @param  Request $request
      *
      * @return JSON
      */
-    public function updateProfile(UserProfile $userProfile, NameUserProfileRequest $request)
+    public function updateProfile(UserProfile $userProfile, NameRequest $request)
     {
         $name = $request->get('name');
         $userProfile->name = $name;
@@ -140,11 +140,11 @@ class UserProfilesController extends Controller
      * возвращает все профили по 5 на страницу, если профилей нет - пустой массив
      * Параметры: 1. page обязательно >= 1
      *
-     * @param  Request $request
+     * @param  PageRequest $request
      *
      * @return JSON
      */
-    public function showProfilesPerPageDB(PageUserProfileRequest $request)
+    public function showProfilesPerPageDB(PageRequest $request)
     {
         $userProfiles = DB::table('user_profiles')->paginate(self::PROFILES_PER_PAGE)->except(['data']);
         return new UserProfileCollection($userProfiles);
@@ -156,11 +156,11 @@ class UserProfilesController extends Controller
      * Параметры: 1 name - обновляет имя профиля
      *
      * @param  int $id
-     * @param  Request $request
+     * @param  NameRequest $request
      *
      * @return JSON
      */
-    public function updateProfileDB($id, NameUserProfileRequest $request)
+    public function updateProfileDB($id, NameRequest $request)
     {
         $name = $request->get('name');
         $userProfile = DB::table('user_profiles')->where('id', $id)->first();

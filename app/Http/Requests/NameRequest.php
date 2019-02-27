@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class PageUserProfileRequest extends FormRequest
+class NameRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,7 @@ class PageUserProfileRequest extends FormRequest
     public function rules()
     {
         return [
-            'page'=>'required|integer|min:1'
+            'name'=>'required|string'
         ];
     }
 }
