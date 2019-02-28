@@ -3,50 +3,47 @@
 namespace App\Http\Controllers\V0;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\NameRequest;
+use App\Http\Requests\PageRequest;
+use App\Http\Resources\UserProfile as UserProfileResource;
+use App\Http\Resources\UserProfileCollection;
 use App\User;
 use App\UserProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Resources\UserProfile as UserProfileResource;
-use App\Http\Resources\UserProfileCollection;
-use App\Http\Requests\PageRequest;
-use App\Http\Requests\NameRequest;
 
 class UserProfilesController extends Controller
 {
     protected const PROFILES_PER_PAGE = 5;
 
-
     /**
-     * 
+     *
      * 1. роут GET api/v0/users/profile/{userProfile}
      * возвращает профиль пользователя
-     * 
+     *
      * @param  UserProfile $userProfile
      *
-     * @return JSON 
-     * 
+     * @return JSON
+     *
      */
     public function showProfile(UserProfile $userProfile)
     {
         return new UserProfileResource($userProfile);
     }
-    
-    
+
     /**
      * 2. роут GET api/v0/user/{user}/profiles
      * возвращает все профили пользователя
-     * 
+     *
      * @param  User $user
      *
      * @return JSON
      */
     public function showProfiles(User $user)
-    {   
-        $userProfiles = UserProfile::where('user_id', $user->id)->get();      
+    {
+        $userProfiles = UserProfile::where('user_id', $user->id)->get();
         return new UserProfileCollection($userProfiles);
     }
-
 
     /**
      * 3. роут GET api/v0/users/profiles
@@ -62,7 +59,6 @@ class UserProfilesController extends Controller
         $userProfiles = UserProfile::paginate(self::PROFILES_PER_PAGE)->except(['data']);
         return new UserProfileCollection($userProfiles);
     }
-
 
     /**
      * 4. роут PATCH api/v0/users/profile/{userProfile}
@@ -81,7 +77,6 @@ class UserProfilesController extends Controller
         return new UserProfileResource($userProfile);
     }
 
-
     /**
      * 5. роут DELETE api/v0/users/profile/{userProfile}
      *
@@ -94,46 +89,43 @@ class UserProfilesController extends Controller
         $userProfile->delete();
         return response()->json(['success' => true]);
     }
-    
 
     /**
-     * 
+     *
      * 6. роут GET api/v0/db/users/profile/{id}
      * возвращает профиль пользователя
-     * 
+     *
      * @param  int $id
      *
-     * @return JSON 
-     * 
+     * @return JSON
+     *
      */
     public function showProfileDB($id)
     {
         $userProfile = DB::table('user_profiles')->where('id', $id)->first();
-        if(!$userProfile){
+        if (!$userProfile) {
             abort(404, "Профиль пользователя с id = $id не найден");
         }
         return new UserProfileResource($userProfile);
     }
 
-
     /**
      * 7. роут GET api/v0/db/user/{userId}/profiles
      * возвращает все профили пользователя
-     * 
+     *
      * @param  int $id
      *
      * @return JSON
      */
     public function showProfilesDB($id)
-    {   
+    {
         $user = DB::table('users')->where('id', $id)->first();
-        if(!$user){
+        if (!$user) {
             abort(404, "Пользователь с id = $id не найден");
         }
         $userProfiles = DB::table('user_profiles')->where('user_id', $id)->get();
-        return new UserProfileCollection($userProfiles); 
+        return new UserProfileCollection($userProfiles);
     }
-
 
     /**
      * 8. роут GET api/v0/db/users/profiles
@@ -150,7 +142,6 @@ class UserProfilesController extends Controller
         return new UserProfileCollection($userProfiles);
     }
 
-    
     /**
      * 9. роут PATCH api/v0/db/users/profile/{id}
      * Параметры: 1 name - обновляет имя профиля
@@ -164,7 +155,7 @@ class UserProfilesController extends Controller
     {
         $name = $request->get('name');
         $userProfile = DB::table('user_profiles')->where('id', $id)->first();
-        if(!$userProfile){
+        if (!$userProfile) {
             abort(404, "Профиль пользователя с id = $id не найден");
         }
         DB::table('user_profiles')
@@ -174,7 +165,6 @@ class UserProfilesController extends Controller
         return new UserProfileResource($updatedUserProfile);
     }
 
-    
     /**
      * 10. роут DELETE api/v0/db/users/profile/{id}
      *
@@ -185,7 +175,7 @@ class UserProfilesController extends Controller
     public function deleteProfileDB($id)
     {
         $userProfile = DB::table('user_profiles')->where('id', $id)->first();
-        if(!$userProfile){
+        if (!$userProfile) {
             abort(404, "Профиль пользователя с id = $id не найден");
         }
         DB::table('user_profiles')->where('id', $id)->delete();

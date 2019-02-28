@@ -17,11 +17,11 @@ class UserProfile extends JsonResource
         // return parent::toArray($request);
         return [
             'profile' => [
-                'id'     => $this->id,
-                'name'   => $this->name,
-                'user_id'=> $this->user_id
-                ]
-            ];
+                'id' => $this->id,
+                'name' => $this->name,
+                'user_id' => $this->user_id,
+            ],
+        ];
     }
     public function with($request)
     {

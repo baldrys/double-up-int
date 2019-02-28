@@ -24,7 +24,7 @@ class PageRequest extends FormRequest
     public function rules()
     {
         return [
-            'page'=>'required|integer|min:1'
+            'page' => 'required|integer|min:1',
         ];
     }
 }

@@ -15,10 +15,10 @@ class UserGroupCollection extends ResourceCollection
     public function toArray($request)
     {
         return [
-            'groups' =>$this->collection   
+            'groups' => $this->collection,
         ];
     }
-    
+
     public function with($request)
     {
         return [

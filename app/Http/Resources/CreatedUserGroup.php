@@ -17,10 +17,10 @@ class CreatedUserGroup extends JsonResource
         // return parent::toArray($request);
         return [
             'created_group' => [
-                'id'     => $this->id,
-                'name'   => $this->name,
-                ]
-            ];
+                'id' => $this->id,
+                'name' => $this->name,
+            ],
+        ];
     }
     public function with($request)
     {
