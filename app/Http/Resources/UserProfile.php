@@ -14,7 +14,6 @@ class UserProfile extends JsonResource
      */
     public function toArray($request)
     {
-        // return parent::toArray($request);
         return [
             'profile' => [
                 'id' => $this->id,

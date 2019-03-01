@@ -36,3 +36,13 @@ Route::get('v0/user/{user}/groups', 'V0\UserGroupsController@showGroups');
 Route::delete('v0/users/groups/{group}', 'V0\UserGroupsController@deleteGroup');
 Route::post('v0/user/{user}/group/{group}', 'V0\UserGroupsController@addUserToGroup');
 Route::delete('v0/user/{user}/group/{group}', 'V0\UserGroupsController@deleteUserFromGroup');
+
+// Task4
+Route::group(['prefix' => 'v1'], function () {
+    Route::get('/auth/login', 'V1\UserAuthController@login');
+    Route::get('/auth/logout', 'V1\UserAuthController@logout');
+    Route::group(['middleware' => ['auth:api', 'admin_only', 'stop_banned']], function () {
+        Route::get('/users', 'V1\UserAuthController@getUsersCredentials');
+        Route::patch('/user/{user}', 'V1\UserAuthController@updateUser');
+    });
+});

@@ -24,11 +24,24 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'api_token', 'banned', 'role',
     ];
 
     public function groups()
     {
         return $this->belongsToMany('App\UserGroup', 'user_groups', 'user_id', 'group_id');
+    }
+
+    /**
+     * Генерация уникального токена
+     *
+     * @return void
+     */
+    public function rollApiKey()
+    {
+        do {
+            $this->api_token = str_random(30);
+        } while ($this->where('api_token', $this->api_token)->exists());
+        $this->save();
     }
 }
