@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\V1;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ApiTokenRequest extends FormRequest
+class EmailPasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,8 @@ class ApiTokenRequest extends FormRequest
     public function rules()
     {
         return [
-            'api_token' => 'required|string|size:30',
+            'email' => 'required|email',
+            'password' => 'required|min:6',
         ];
     }
 }

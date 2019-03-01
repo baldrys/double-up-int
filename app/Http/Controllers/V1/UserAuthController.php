@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\EmailPasswordRequest;
+use App\Http\Requests\V1\ApiTokenRequest;
+use App\Http\Requests\V1\EmailPasswordRequest;
+use App\Http\Requests\V1\UserCredetialsRequest;
 use App\Http\Transformers\V1\User\UserTransformer;
-use App\Support\Enums\UserRole;
 use App\User;
-use BenSampo\Enum\Rules\EnumKey;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Requests\ApiTokenRequest;
 
 class UserAuthController extends Controller
 {
@@ -86,11 +85,8 @@ class UserAuthController extends Controller
      *
      * @return JSON
      */
-    public function getUsersCredentials(ApiTokenRequest $request)
+    public function getUsersCredentials(Request $request)
     {
-        $this->validate($request, [
-            'page' => 'integer|min:1',
-        ]);
         $users = User::paginate(self::USERS_PER_PAGE)->except(['data']);
         return response()->json([
             "success" => true,
@@ -116,14 +112,8 @@ class UserAuthController extends Controller
      *
      * @return JSON
      */
-    public function updateUser(User $user, Request $request)
+    public function updateUser(User $user, UserCredetialsRequest $request)
     {
-        $this->validate($request, [
-            'name' => 'required|string',
-            'role' => ['required', new EnumKey(UserRole::class)],
-            'banned' => 'required|boolean',
-        ]);
-
         $user->name = $request->get('name');
         $user->role = $request->get('role');
         $user->banned = $request->get('banned');
