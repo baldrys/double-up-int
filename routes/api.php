@@ -46,3 +46,11 @@ Route::group(['prefix' => 'v1'], function () {
         Route::patch('/user/{user}', 'V1\UserAuthController@updateUser');
     });
 });
+
+// Task5
+Route::group(['prefix' => 'v1'], function () {
+    Route::group(['prefix' => 'github'],  function () {
+        Route::get('/{userName}/{repositoryName}/issues', 'V1\GithubApiController@getIssues');
+        Route::get('/{userName}/repositories', 'V1\GithubApiController@getRepositories');
+    });
+});
