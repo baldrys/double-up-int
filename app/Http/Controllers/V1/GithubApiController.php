@@ -31,29 +31,25 @@ class GithubApiController extends Controller
     public function getIssues($userName, $repositoryName, GithubApiRequest $request)
     {
         $page = $request->input('page', 1);
-        $perPage = $request->input('perPage', GithubApiController::DATA_PER_PAGE);
+        $perPage = $request->input('perPage', self::DATA_PER_PAGE);
 
         if (!$request->get('fromDb')) {
 
             $githubApi = GithubApi::createGithubApi($userName);
 
             $gitHubUserModel = GithubUser::firstOrCreate(['username' => $userName]);
-            $repositoryFromApi = $githubApi->getRepository($repositoryName);
-            $gitHubRepositoryModel = GithubRepository::firstOrCreate(array_merge($repositoryFromApi, [
-                'github_user_id' => $gitHubUserModel->id,
-            ]));
-            $issuesFromApi = $githubApi->getIssues($repositoryName);
 
-            $issues = array();
-            foreach ($issuesFromApi as $issue) {
-                array_push($issues, GithubIssue::firstOrCreate(array_merge([
-                    'repository_id' => $gitHubRepositoryModel->id,
-                ], $issue)));
-            }
-    
-            $collection = new Collection($issues);
-            $issues = $collection->slice(($page - 1) * $perPage, $perPage)->all();
+            $repositoryFromApi = $githubApi->getRepository($repositoryName);
+            $repositoryWithUserId = array_merge($repositoryFromApi, ['github_user_id' => $gitHubUserModel->id]);
+            $gitHubRepositoryModel = GithubRepository::firstOrCreate($repositoryWithUserId);
             
+            $issuesFromApi = $githubApi->getIssues($repositoryName);
+            $issuesForRepository = self::addItemToSubArrays(['repository_id'=> $gitHubRepositoryModel->id], $issuesFromApi);
+            $issues = self::getOrCreateRecords($issuesForRepository, 'App\GithubIssue')->paginate($perPage);
+
+            // $collection = new Collection($issues);
+            // $issuesModels = $collection->slice(($page - 1) * $perPage, $perPage)->all();
+
         } else {
             $issues = GithubUser::where('username', $userName)
                 ->firstOrFail()
@@ -74,6 +70,47 @@ class GithubApiController extends Controller
 
     }
 
+
+    /**
+     * Добавляет элемент ко всем подмассивам
+     * 
+     * Вовзращает новый массив
+     *
+     * @param  mixed $item
+     * @param  Array $array
+     *
+     * @return Array
+     */
+    static function addItemToSubArrays($item, $array) {
+        $modifiedArray = array();
+        foreach($array as $subArray)
+        {
+            array_push($modifiedArray, array_merge($subArray, $item));
+        }
+        return $modifiedArray;   
+    } 
+
+
+    /**
+     * Возвращает записи в модели, если их нет то создает их
+     * 
+     *
+     * @param  Array $data
+     * @param  mixed $model
+     *
+     * @return Array
+     */
+    static function getOrCreateRecords(Array $data, $model) {
+        // $updatedRecords = array();
+        $updatedRecords = new Collection();
+            // $issuesModels = $collection->slice(($page - 1) * $perPage, $perPage)->all();
+           foreach ($data as $record) {
+            // array_push($updatedRecords, $model::firstOrCreate($record));
+            $updatedRecords->push($model::firstOrCreate($record));
+        }
+        return $updatedRecords;   
+    } 
+
     /**
      * 2. GET api/v1/github/{userName}/repositories
      * 
@@ -87,7 +124,7 @@ class GithubApiController extends Controller
     public function getRepositories($userName, GithubApiRequest $request)
     {
         $page = $request->input('page', 1);
-        $perPage = $request->input('perPage', GithubApiController::DATA_PER_PAGE);
+        $perPage = $request->input('perPage', self::DATA_PER_PAGE);
 
 
         if (!$request->input('fromDb')) {
