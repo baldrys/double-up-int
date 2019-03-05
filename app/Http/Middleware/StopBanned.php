@@ -18,6 +18,9 @@ class StopBanned
         if (!$request->user()->banned) {
             return $next($request);
         }
-        abort(403, "Your account was banned!");
+        return response()->json([
+            "success" => false,
+            "message" => "Your account was banned!",
+        ], 403);
     }
 }
