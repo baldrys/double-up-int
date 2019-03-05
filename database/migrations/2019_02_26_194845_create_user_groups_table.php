@@ -22,7 +22,7 @@ class CreateUserGroupsTable extends Migration
             $table->foreign('user_id')
             ->references('id')->on('users')
             ->onUpdate('cascade')
-            ->onDelete('set null');
+            ->onDelete('cascade');
 
             $table->Integer('group_id')
             ->nullable(true)
@@ -30,7 +30,7 @@ class CreateUserGroupsTable extends Migration
             $table->foreign('group_id')
             ->references('id')->on('user_group')
             ->onUpdate('cascade')
-            ->onDelete('set null');
+            ->onDelete('cascade');
 
 
         });
