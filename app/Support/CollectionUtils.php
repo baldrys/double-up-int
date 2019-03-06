@@ -33,26 +33,26 @@ class CollectionUtils
      *
      * @return void
      */
-    public static function replaceKey(array &$item, $oldKey, $newKey)
+    public static function replaceKeyInItem(array $item, $oldKey, $newKey)
     {
         $item[$newKey] = $item[$oldKey];
         unset($item[$oldKey]);
+        return $item;
     }
 
     /**
      * renameKeyInArray
      *
-     * @param  mixed $old
-     * @param  mixed $new
+     * @param  mixed $oldKey
+     * @param  mixed $newKey
      * @param  mixed $array
      *
      * @return void
      */
-    public static function renameKeysInData($old, $new, $data)
+    public static function renameKeysInData(array $data, $oldKey, $newKey)
     {
-        return collect($data)->transform(function ($item) use ($old, $new) {
-            CollectionUtils::replaceKey($item, $old, $new);
-            return $item;
+        return collect($data)->transform(function ($item) use ($oldKey, $newKey) {
+            return CollectionUtils::replaceKeyInItem($item, $oldKey, $newKey);
         })->all();
     }
 

@@ -17,4 +17,34 @@ class GithubRepository extends Model
         return $this->hasMany('App\GithubIssue', 'repository_id');
     }
 
+    /**
+     * Возвращает или создает Issues с указанными данными
+     *
+     * @param  array $data
+     *
+     * @return array
+     */
+    public function getOrCreateIssues($data)
+    {
+        return collect($data)->map(function ($item) {
+
+            return $this->getOrCreateIssue($item);
+
+        })->all();
+    }
+
+    /**
+     * Возвращает или создает Issue с указанными данными
+     *
+     * @param  array $data
+     *
+     * @return Model GithubIssue
+     */
+    public function getOrCreateIssue($data)
+    {
+        return GithubIssue::firstOrCreate(
+            array_merge($data, ['repository_id' => $this->id])
+        );
+
+    }
 }
