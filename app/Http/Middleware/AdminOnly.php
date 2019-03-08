@@ -19,6 +19,9 @@ class AdminOnly
         if ($request->user()->role == UserRole::Admin) {
             return $next($request);
         }
-        abort(403, "You must be an Admin!");
+        return response()->json([
+            "success" => false,
+            "message" => "You must be an Admin!",
+        ], 403);
     }
 }

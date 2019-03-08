@@ -42,8 +42,8 @@ Route::group(['prefix' => 'v1'], function () {
     Route::get('/auth/login', 'V1\UserAuthController@login');
     Route::get('/auth/logout', 'V1\UserAuthController@logout');
     Route::group(['middleware' => ['auth:api', 'admin_only', 'stop_banned']], function () {
-        Route::get('/users', 'V1\UserAuthController@getUsersCredentials');
-        Route::patch('/user/{user}', 'V1\UserAuthController@updateUser');
+        Route::get('/users', 'V1\UserController@getUsersCredentials');
+        Route::patch('/user/{user}', 'V1\UserController@updateUser');
     });
 });
 
