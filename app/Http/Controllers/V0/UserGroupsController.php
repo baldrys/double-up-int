@@ -70,7 +70,10 @@ class UserGroupsController extends Controller
     public function addUserToGroup(User $user, UserGroup $group)
     {
         if (UserGroups::where('user_id', $user->id)->where('group_id', $group->id)->exists()) {
-            abort(400, "Пользователь $user->name уже в группе $group->name!");
+            return response()->json([
+                "success" => false,
+                "message" => "Пользователь $user->name уже в группе $group->name!"
+            ], 400);
         }
         $userGroup = new UserGroups;
         $userGroup->user_id = $user->id;
@@ -92,7 +95,10 @@ class UserGroupsController extends Controller
     {
         $userGroup = UserGroups::where('user_id', $user->id)->where('group_id', $group->id);
         if (!$userGroup->exists()) {
-            abort(400, "Пользователя $user->name нет в группе $group->name!");
+            return response()->json([
+                "success" => false,
+                "message" => "Пользователя $user->name нет в группе $group->name!"
+            ], 400);
         }
         $userGroup->delete();
         return response()->json(['success' => true]);
