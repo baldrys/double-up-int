@@ -1,18 +1,18 @@
 <?php
 
-namespace App;
+namespace App\Models\Github;
 
 use Illuminate\Database\Eloquent\Model;
 
-class GithubUser extends Model
+class GithubUserModel extends Model
 {
     public $timestamps = false;
-    protected $_table = 'github_users';
-    protected $_fillable = ['username'];
+    protected $table = 'github_users';
+    protected $fillable = ['username'];
 
     public function repositories()
     {
-        return $this->hasMany('App\GithubRepository');
+        return $this->hasMany('App\Models\Github\GithubRepositoryModel', 'github_user_id');
     }
 
     /**
@@ -36,14 +36,25 @@ class GithubUser extends Model
      *
      * @param  array $data
      *
-     * @return Model GithubRepository
+     * @return Model GithubRepositoryModel
      */
     public function getOrCreateRepository($data)
     {
-        return GithubRepository::firstOrCreate(
+        return GithubRepositoryModel::firstOrCreate(
             array_merge($data, ['github_user_id' => $this->id])
         );
+    }
 
+    public function issues()
+    {
+        return $this->hasManyThrough(
+            'App\Models\Github\GithubIssueModel', 
+            'App\Models\Github\GithubRepositoryModel',
+            'github_user_id',
+            'repository_id',
+            'id',
+            'id'
+        );
     }
 
 }

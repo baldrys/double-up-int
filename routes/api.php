@@ -52,5 +52,8 @@ Route::group(['prefix' => 'v1'], function () {
     Route::group(['prefix' => 'github'],  function () {
         Route::get('/{userName}/{repositoryName}/issues', 'V1\GithubApiController@getIssues');
         Route::get('/{userName}/repositories', 'V1\GithubApiController@getRepositories');
+
+        Route::get('/{userName}/issues/search', 'V1\GithubApiController@searchInIssues');
+        Route::get('/{userName}/repositories/search', 'V1\GithubApiController@searchInRepositories');
     });
 });

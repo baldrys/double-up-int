@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Support;
-use Illuminate\Support\Collection;
+
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class CollectionUtils
 {
@@ -41,7 +42,7 @@ class CollectionUtils
     }
 
     /**
-     * renameKeyInArray
+     * Замена ключей в каждом подмасиве
      *
      * @param  mixed $oldKey
      * @param  mixed $newKey
@@ -49,7 +50,7 @@ class CollectionUtils
      *
      * @return void
      */
-    public static function renameKeysInData(array $data, $oldKey, $newKey)
+    public static function renameKeysInData($data, $oldKey, $newKey)
     {
         return collect($data)->transform(function ($item) use ($oldKey, $newKey) {
             return CollectionUtils::replaceKeyInItem($item, $oldKey, $newKey);
@@ -105,5 +106,27 @@ class CollectionUtils
             'to' => $lap->lastItem(),
             'total' => $lap->total(),
         ];
+    }
+
+    public static function searchInCollection($data, array $filters)
+    {
+        $collection = collect($data);
+        foreach ($filters as $filter) {
+            $key = $filter[0];
+            $cond = $filter[1];
+            $var = $filter[2];
+            if ($var) {
+                $collection = $collection->filter(function ($item) use ($key, $cond, $var) {
+                    if ($cond == 'in') {
+                        return (strpos($item[$key], $var) !== false);
+                    } elseif ($cond == 'eq') {
+                        return ($item[$key] == $var);
+                    } else {
+                        return true;
+                    }
+                });
+            }
+        }
+        return $collection->values();
     }
 }

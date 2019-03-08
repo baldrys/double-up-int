@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers\V1;
 
-use App\GithubUser;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\V1\GithubApiRequest;
+use App\Http\Requests\V1\GithubApiRequests\GithubApiRequest;
+use App\Http\Requests\V1\GithubApiRequests\GithubIssuesSearchRequest;
+use App\Http\Requests\V1\GithubApiRequests\GithubRepositoriesSearchRequest;
+use App\Models\Github\GithubIssueModel;
+use App\Models\Github\GithubRepositoryModel;
+use App\Models\Github\GithubUserModel;
 use App\Support\CollectionUtils;
 use App\Support\GithubApi;
 use Illuminate\Http\Request;
@@ -13,16 +17,15 @@ class GithubApiController extends Controller
 {
     const DATA_PER_PAGE = 2;
 
-    
     /**
      * 1. GET api/v1/github/{userName}/{repositoryName}/issues
      *
      * Получаем список issue
      *
      *
-     * @param  mixed $userName
-     * @param  mixed $repositoryName
-     * @param  mixed $request
+     * @param  string $userName
+     * @param  string $repositoryName
+     * @param  GithubApiRequest $request
      *
      * @return JSON response
      */
@@ -33,23 +36,32 @@ class GithubApiController extends Controller
 
         if (!$request->get('fromDb')) {
             $githubApi = GithubApi::createGithubApi($userName);
-
-            $gitHubUserModel = GithubUser::firstOrCreate(['username' => $userName]);
-            $repositoryFromApi = $githubApi->getRepository(
-                $repositoryName,
-                ['id', 'name', 'description', 'private', 'language']
-            );
+            $repositoryFromApi = $githubApi->getRepository($repositoryName);
+            $usersFromApi = $githubApi->findUser($userName);
+            if (count($usersFromApi['users']) == 0) {
+                return response()->json([
+                    "success" => false,
+                    "message" => "Не найдено пользователя $userName",
+                ]);
+            }
+            if (!$repositoryFromApi) {
+                return response()->json([
+                    "success" => false,
+                    "message" => "Не найдено репозитория $repositoryName для пользователя $userName",
+                ]);
+            }
+            $gitHubUserModel = GithubUserModel::firstOrCreate(['username' => $userName]);
 
             $gitHubRepositoryModel = $gitHubUserModel->getOrCreateRepository(
                 CollectionUtils::replaceKeyInItem($repositoryFromApi, 'id', 'github_id')
             );
 
-            $issuesFromGithubApi = $githubApi->getIssues($repositoryName, ['id', 'title', 'number', 'state']);
+            $issuesFromGithubApi = $githubApi->getIssuesOfRepository($repositoryName);
             $issues = $gitHubRepositoryModel->getOrCreateIssues(
                 CollectionUtils::renameKeysInData($issuesFromGithubApi, 'id', 'github_id')
             );
         } else {
-            $issues = GithubUser::where('username', $userName)
+            $issues = GithubUserModel::where('username', $userName)
                 ->firstOrFail()
                 ->repositories()
                 ->where('name', $repositoryName)
@@ -60,20 +72,19 @@ class GithubApiController extends Controller
         return response()->json([
             "success" => true,
             "data" => [
-                "issues" => CollectionUtils::paginateWithoutKey($issues, $perPage, $page)['data']
+                "issues" => CollectionUtils::paginateWithoutKey($issues, $perPage, $page)['data'],
             ],
         ]);
 
     }
-
 
     /**
      * 2. GET api/v1/github/{userName}/repositories
      *
      * Получаем список репозиториев
      *
-     * @param  mixed $userName
-     * @param  mixed $request
+     * @param  string $userName
+     * @param  GithubApiRequest $request
      *
      * @return JSON response
      */
@@ -84,17 +95,21 @@ class GithubApiController extends Controller
 
         if (!$request->input('fromDb')) {
             $githubApi = GithubApi::createGithubApi($userName);
-            $gitHubUserModel = GithubUser::firstOrCreate(['username' => $userName]);
-
-            $repositoriesFromApi = $githubApi->getRepositories(
-                ['id', 'name', 'description', 'private', 'language']
-            );
+            $repositoriesFromApi = $githubApi->getRepositories();
+            $usersFromApi = $githubApi->findUser($userName);
+            if (count($usersFromApi['users']) == 0) {
+                return response()->json([
+                    "success" => false,
+                    "message" => "Не найдено пользователя $userName",
+                ]);
+            }
+            $gitHubUserModel = GithubUserModel::firstOrCreate(['username' => $userName]);
 
             $repositories = $gitHubUserModel->getOrCreateRepositories(
                 CollectionUtils::renameKeysInData($repositoriesFromApi, 'id', 'github_id')
             );
         } else {
-            $repositories = GithubUser::where('username', $userName)
+            $repositories = GithubUserModel::where('username', $userName)
                 ->firstOrFail()
                 ->repositories()
                 ->get();
@@ -102,10 +117,103 @@ class GithubApiController extends Controller
         return response()->json([
             "success" => true,
             "data" => [
-                "repositories" => CollectionUtils::paginateWithoutKey($repositories, $perPage, $page)['data']
+                "repositories" => CollectionUtils::paginateWithoutKey($repositories, $perPage, $page)['data'],
             ],
         ]);
 
     }
 
+    /**
+     * 3. GET api/v1/github/{userName}/issues/search
+     *
+     * @param  string $userName
+     * @param  GithubIssuesSearchRequest $request
+     *
+     * @return JSON response
+     */
+    public function searchInIssues(string $userName, GithubIssuesSearchRequest $request)
+    {
+        $page = $request->input('page', 1);
+        $perPage = $request->input('perPage', self::DATA_PER_PAGE);
+        $filters = [
+            ['title', 'in', $request->input('title')],
+            ['state', 'eq', $request->input('state')],
+            ['number', 'eq', $request->input('number')],
+        ];
+
+        if (!$request->input('fromDb')) {
+            $githubApi = GithubApi::createGithubApi($userName);
+            $usersFromApi = $githubApi->findUser($userName);
+            if (count($usersFromApi['users']) == 0) {
+                return response()->json([
+                    "success" => false,
+                    "message" => "Не найдено пользователя $userName",
+                ]);
+            }
+            $issuesFromApi = $githubApi->searchIssues();
+            $issuesSearched = CollectionUtils::searchInCollection($issuesFromApi, $filters);
+            $issues = GithubIssueModel::getOrCreateIssues(
+                CollectionUtils::renameKeysInData($issuesSearched, 'id', 'github_id')
+            );
+        } else {
+            $issuesFromDb = GithubUserModel::where('username', $userName)
+                ->firstOrFail()
+                ->issues()
+                ->get();
+            $issues = CollectionUtils::searchInCollection($issuesFromDb, $filters);
+        }
+        return response()->json([
+            "success" => true,
+            "data" => [
+                "issues" => CollectionUtils::paginateWithoutKey($issues, $perPage, $page)['data'],
+            ],
+        ]);
+    }
+
+    /**
+     * 4. GET api/v1/github/{userName}/repositories/search
+     *
+     * @param  string $userName
+     * @param  GithubRepositoriesSearchRequest $request
+     *
+     * @return JSON response
+     */
+    public function searchInRepositories(string $userName, GithubRepositoriesSearchRequest $request)
+    {
+        $page = $request->input('page', 1);
+        $perPage = $request->input('perPage', self::DATA_PER_PAGE);
+        $filters = [
+            ['name', 'in', $request->input('title')],
+            ['private', 'eq', $request->input('private')],
+            ['language', 'in', $request->input('language')],
+        ];
+
+        if (!$request->input('fromDb')) {
+            $githubApi = GithubApi::createGithubApi($userName);
+            $repositoriesFromApi = $githubApi->searchRepositories();
+            $usersFromApi = $githubApi->findUser($userName);
+            if (count($usersFromApi['users']) == 0) {
+                return response()->json([
+                    "success" => false,
+                    "message" => "Не найдено пользователя $userName",
+                ]);
+            }
+            $repositoriesSearched = CollectionUtils::searchInCollection($repositoriesFromApi, $filters);
+            $repositories = GithubRepositoryModel::getOrCreateRepositories(
+                CollectionUtils::renameKeysInData($repositoriesSearched, 'id', 'github_id')
+            );
+        } else {
+            $repositoriesFromDb = GithubUserModel::where('username', $userName)
+                ->firstOrFail()
+                ->repositories()
+                ->get();
+            $repositories = CollectionUtils::searchInCollection($repositoriesFromDb, $filters);
+        }
+        return response()->json([
+            "success" => true,
+            "data" => [
+                "repositories" => CollectionUtils::paginateWithoutKey($repositories, $perPage, $page)['data'],
+            ],
+        ]);
+    }
 }

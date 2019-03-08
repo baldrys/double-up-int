@@ -1,10 +1,8 @@
 <?php
 
-namespace App\Http\Requests\V1;
+namespace App\Http\Requests\V1\GithubApiRequests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class GithubApiRequest extends FormRequest
+class GithubIssuesSearchRequest extends GithubApiRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,10 +21,13 @@ class GithubApiRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'fromDb' => 'required|boolean',
-            'page' => 'string|min:1',
-            'perPage' => 'integer|between:1,10',
-        ];
+        return array_merge(
+            parent::rules(),
+            [
+                'title' => 'string',
+                'state' => 'string',
+                'number' => 'integer',
+            ]
+        );
     }
 }

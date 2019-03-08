@@ -1,10 +1,10 @@
 <?php
 
-namespace App;
+namespace App\Models\Github;
 
 use Illuminate\Database\Eloquent\Model;
 
-class GithubRepository extends Model
+class GithubRepositoryModel extends Model
 {
     public $timestamps = false;
     protected $table = 'github_repositories';
@@ -14,7 +14,7 @@ class GithubRepository extends Model
 
     public function issues()
     {
-        return $this->hasMany('App\GithubIssue', 'repository_id');
+        return $this->hasMany('App\Models\Github\GithubIssueModel', 'repository_id');
     }
 
     /**
@@ -38,13 +38,21 @@ class GithubRepository extends Model
      *
      * @param  array $data
      *
-     * @return Model GithubIssue
+     * @return Model GithubIssueModel
      */
     public function getOrCreateIssue($data)
     {
-        return GithubIssue::firstOrCreate(
+        return GithubIssueModel::firstOrCreate(
             array_merge($data, ['repository_id' => $this->id])
         );
 
+    }
+
+    public static function getOrCreateRepositories($data){
+        return collect($data)->map(function ($item) {
+
+            return GithubRepositoryModel::firstOrCreate($item);
+
+        })->all();
     }
 }
