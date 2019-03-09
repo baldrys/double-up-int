@@ -104,4 +104,21 @@ class UserGroupsController extends Controller
         return response()->json(['success' => true]);
     }
 
+    /**
+     * 6. роут PATCH api/v0/users/group/{group}
+     * Параметры: 1 name - обновляет имя профиля
+     *
+     * @param  NameRequest $userProfile
+     * @param  Request $request
+     *
+     * @return JSON
+     */
+    public function updateGroup(UserGroup $group, NameRequest $request)
+    {
+        $name = $request->get('name');
+        $group->name = $name;
+        $group->save();
+        return new CreatedUserGroup($group);
+    }
+
 }

@@ -181,4 +181,22 @@ class UserProfilesController extends Controller
         DB::table('user_profiles')->where('id', $id)->delete();
         return response()->json(['success' => true]);
     }
+
+    
+    /**
+     * 11. роут POST api/v0/users/profile
+     * добавляет profile
+     *
+     * @param  NameRequest $request
+     *
+     * @return JSON
+     */
+    public function addProfile(NameRequest $request)
+    {
+        $name = $request->get('name');
+        $userProfile = new UserProfile;
+        $userProfile->name = $request->get('name');
+        $userProfile->save();
+        return new UserProfileResource($userProfile);
+    }
 }

@@ -1,72 +1,90 @@
 @extends('layouts.app')
 
 @section('content')
-    <h3>Список групп пользователя {{$user->name }}: </h3>
-    <table class="table">
-            <thead>
-              <tr>
-                <th >#</th>
-                <th >Название группы</th>
-                <th ></th>
-              </tr>
-            </thead>
-            <tbody>
+    <!-- Editable table -->
+    <div class="card">
+        <h3 class="card-header text-center font-weight-bold text-uppercase py-4">{{$user->name }}'s groups</h3>
+        <div class="card-body">
+            <div id="table" class="table-editable">
+            <span class="table-add float-right mb-3 mr-2"><a href="#!" class="text-success"><i class="fas fa-plus fa-2x"
+                    aria-hidden="true"></i></a></span>
+            <table class="table table-bordered table-responsive-md table-striped text-center">
+                <tr>
+                <th class="text-center">Gruop id</th>
+                <th class="text-center">Gruop name</th>
+                <th class="text-center">Save</th>
+                <th class="text-center">Remove</th>
+                </tr>
 
             @foreach ($groups as $group)
-                <tr class="rowGroup">
-                    <th scope="row" >{{ $group->id }}</th>
-                    <td>{{ $group->name }}</td>
-                    <td class="text-right">
-                        <div class="deleteGroup">
-                            <button type="button" class="btn btn-danger">удалить</button>
-                        </div>
-                    </td> 
+                <tr class="row-group">
+                <td class="pt-3-half group-id" contenteditable="false">{{ $group->id }}</td>
+                <td class="pt-3-half group-name" contenteditable="true">{{ $group->name }}</td>
+                <td>
+                    <span class="table-save"><button type="button" class="btn btn-primary btn-rounded btn-sm my-0">Save</button></span>
+                </td>
+                <td>
+                    <span class="table-remove"><button type="button" class="btn btn-danger btn-rounded btn-sm my-0">Remove</button></span>
+                </td>
                 </tr>
             @endforeach
-
-
-            </tbody>
-          </table>
-
-          
-    <h3>Форма для добавления группы</h3>
-        <form id="createGroupForm">
-            <div class="form-group">
-                <input type="text" name="groupName" class="form-control" placeholder="введите название группы" required="required" >
+                
+            </table>
             </div>
-            <button type="submit" class="btn btn-primary">Добавить группу</button>
-        </form>
-
+        </div>
+        </div>
+        <!-- Editable table -->
+        <div class="card">
+            
+            <div class="card-body">
+                <h4 class="card-title">Add gruop</h4>
+                <form id="addGroupForm">
+                    <div class="form-group">
+                        <input type="text" name="groupName" class="form-control" placeholder="Gruop name" required="required" >
+                    </div>
+                    <button type="submit" class="btn btn-primary">add</button>
+                </form>
+            </div>
+        </div>
+        
     <script>
-            $("#createGroupForm").submit(function( event ) {
+            $("#addGroupForm").submit(function( event ) {
                 event.preventDefault();
                 var $form = $( this );
                 var groupName = $form.find( "input[name='groupName']" ).val();
-                var addGroupPost = $.post( "{{ url('api/v0/users/group') }}", { name: groupName } );
-                addGroupPost.done(function(data) {
-                    var newGroupId = data.data.created_group.id;
-                    var userId = {{$user->id }};
-                    addGroupToUserPost = $.post( "{{ url('api/v0/user/'.$user->id.'/group/') }}"+"/"+newGroupId, {});
-                    addGroupToUserPost.done(function() {
-                        location.reload();
+                $.ajax({
+                    url: "{{ url('api/v0/users/group') }}",
+                    data: { name: groupName },
+                    type: 'POST',
+                    }).done(function(data){
+                        var newGroupId = data.data.created_group.id;
+                        $.ajax({
+                        url: "{{ url('api/v0/user/'.$user->id.'/group/') }}"+"/"+newGroupId,
+                        type: 'POST',
+                        }).done(function(){location.reload()});  
                     });
-                });
             });
 
-
-            $(".deleteGroup").click(function( event ) {
+            $(".table-save").click(function( event ) {
                 event.preventDefault();
-                var idGroupToDelete = $( this ).closest('.rowGroup').children('th').text();
+                var nameToSave = $( this ).closest('.row-group').children('td.group-name').text();
+                var iDGroupToSave = $( this ).closest('.row-group').children('td.group-id').text();
+                $.ajax({
+                    url: "{{ url('api/v0/users/group') }}"+"/"+iDGroupToSave,
+                    data: { name: nameToSave },
+                    type: 'PATCH',
+                    }).done(function(){location.reload()});
+
+            });
+
+            $(".table-remove").click(function( event ) {
+                event.preventDefault();
+                var idGroupToDelete = $( this ).closest('.row-group').children('td.group-id').text();
+                console.log(idGroupToDelete);
                 $.ajax({
                     url: "{{ url('api/v0/users/groups') }}"+"/"+idGroupToDelete,
                     type: 'DELETE',
                     }).done(function(){location.reload()});
-            });
-
-
-
-            
+            });     
     </script>
-
-
 @endsection

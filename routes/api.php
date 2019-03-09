@@ -30,6 +30,10 @@ Route::get('v0/db/users/profiles', 'V0\UserProfilesController@showProfilesPerPag
 Route::patch('v0/db/users/profile/{id}', 'V0\UserProfilesController@updateProfileDB');
 Route::delete('v0/db/users/profile/{id}', 'V0\UserProfilesController@deleteProfileDB');
 
+// Task6
+Route::post('v0/users/profile', 'V0\UserProfilesController@addProfile');
+Route::patch('v0/users/group/{group}', 'V0\UserGroupsController@updateGroup');
+
 // Task3
 Route::post('v0/users/group', 'V0\UserGroupsController@addGroup');
 Route::get('v0/user/{user}/groups', 'V0\UserGroupsController@showGroups');

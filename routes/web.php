@@ -20,7 +20,7 @@ Route::get('task1/uuid', 'Task1\Task1Controller@uuid');
 Route::get('task1/data_from_config ', 'Task1\Task1Controller@data_from_config');
 
 Route::get('/', function () {
-        return view('welcome');
+        return view('index');
     });
 Route::get('/groups/{user}', 'GroupsController@index');
 Route::get('/profiles', 'ProfilesController@index');
