@@ -42,13 +42,13 @@ class GithubApiController extends Controller
                 return response()->json([
                     "success" => false,
                     "message" => "Не найдено пользователя $userName",
-                ]);
+                ], 404);
             }
             if (!$repositoryFromApi) {
                 return response()->json([
                     "success" => false,
                     "message" => "Не найдено репозитория $repositoryName для пользователя $userName",
-                ]);
+                ], 404);
             }
             $gitHubUserModel = GithubUserModel::firstOrCreate(['username' => $userName]);
 
@@ -101,7 +101,7 @@ class GithubApiController extends Controller
                 return response()->json([
                     "success" => false,
                     "message" => "Не найдено пользователя $userName",
-                ]);
+                ], 404);
             }
             $gitHubUserModel = GithubUserModel::firstOrCreate(['username' => $userName]);
 
@@ -148,7 +148,7 @@ class GithubApiController extends Controller
                 return response()->json([
                     "success" => false,
                     "message" => "Не найдено пользователя $userName",
-                ]);
+                ], 404);
             }
             $issuesFromApi = $githubApi->searchIssues();
             $issuesSearched = CollectionUtils::searchInCollection($issuesFromApi, $filters);
@@ -196,7 +196,7 @@ class GithubApiController extends Controller
                 return response()->json([
                     "success" => false,
                     "message" => "Не найдено пользователя $userName",
-                ]);
+                ], 404);
             }
             $repositoriesSearched = CollectionUtils::searchInCollection($repositoriesFromApi, $filters);
             $repositories = GithubRepositoryModel::getOrCreateRepositories(
