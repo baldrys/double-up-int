@@ -7,10 +7,13 @@ use App\Http\Requests\NameRequest;
 use App\Http\Requests\PageRequest;
 use App\Http\Resources\UserProfile as UserProfileResource;
 use App\Http\Resources\UserProfileCollection;
+use App\Jobs\SendEmailJob;
+use App\Mail\ProfileUpdated;
 use App\User;
 use App\UserProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 
 class UserProfilesController extends Controller
 {
@@ -72,8 +75,11 @@ class UserProfilesController extends Controller
     public function updateProfile(UserProfile $userProfile, NameRequest $request)
     {
         $name = $request->get('name');
+        $oldUserProfile = clone $userProfile;
         $userProfile->name = $name;
         $userProfile->save();
+        $profileUpdatedMail = new ProfileUpdated($oldUserProfile, $userProfile);
+        Queue::push(new SendEmailJob($profileUpdatedMail));
         return new UserProfileResource($userProfile);
     }
 
@@ -182,7 +188,6 @@ class UserProfilesController extends Controller
         return response()->json(['success' => true]);
     }
 
-    
     /**
      * 11. роут POST api/v0/users/profile
      * добавляет profile

@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\NameRequest;
 use App\Http\Resources\CreatedUserGroup;
 use App\Http\Resources\UserGroupCollection;
+use App\Jobs\SendEmailJob;
+use App\Mail\GroupAdded;
 use App\User;
 use App\UserGroup;
 use App\UserGroups;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Queue;
 
 class UserGroupsController extends Controller
 {
@@ -27,6 +30,8 @@ class UserGroupsController extends Controller
         $group = new UserGroup;
         $group->name = $request->get('name');
         $group->save();
+        $groupAddedMail = new GroupAdded($group);
+        Queue::push(new SendEmailJob($groupAddedMail));
         return new CreatedUserGroup($group);
     }
 
@@ -72,7 +77,7 @@ class UserGroupsController extends Controller
         if (UserGroups::where('user_id', $user->id)->where('group_id', $group->id)->exists()) {
             return response()->json([
                 "success" => false,
-                "message" => "Пользователь $user->name уже в группе $group->name!"
+                "message" => "Пользователь $user->name уже в группе $group->name!",
             ], 400);
         }
         $userGroup = new UserGroups;
@@ -97,7 +102,7 @@ class UserGroupsController extends Controller
         if (!$userGroup->exists()) {
             return response()->json([
                 "success" => false,
-                "message" => "Пользователя $user->name нет в группе $group->name!"
+                "message" => "Пользователя $user->name нет в группе $group->name!",
             ], 400);
         }
         $userGroup->delete();
