@@ -5,7 +5,10 @@
         <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
           <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
             <li class="nav-item">
-            <a class="nav-link" href="{{url('profiles')}}">Profiles</a>
+              <a class="nav-link" href="{{url('profiles')}}">Profiles</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{url('groups')}}">Groups</a>
             </li>
           </ul>
           <form class="form-inline my-2 my-lg-0"  id="searchByIdUserForm">
