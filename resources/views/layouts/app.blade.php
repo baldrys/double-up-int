@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" media="screen" href="{{url('css/bootstrap.css')}}">
     <link rel="stylesheet" type="text/css" media="screen" href="{{url('css/my-style.css')}}">
     <script src="{{url('js/jquery.js')}}"></script>
+    <script src="{{url('js/requestsJquery.js')}}"></script>
 </head>
 <body>
     @include('layouts.nav')
