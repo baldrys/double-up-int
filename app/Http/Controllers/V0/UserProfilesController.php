@@ -78,8 +78,7 @@ class UserProfilesController extends Controller
         $oldUserProfile = clone $userProfile;
         $userProfile->name = $name;
         $userProfile->save();
-        $profileUpdatedMail = new ProfileUpdated($oldUserProfile, $userProfile);
-        Queue::push(new SendEmailJob($profileUpdatedMail));
+        User::notifyAllAdmins(new ProfileUpdated($oldUserProfile, $userProfile));
         return new UserProfileResource($userProfile);
     }
 

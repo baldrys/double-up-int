@@ -30,8 +30,7 @@ class UserGroupsController extends Controller
         $group = new UserGroup;
         $group->name = $request->get('name');
         $group->save();
-        $groupAddedMail = new GroupAdded($group);
-        Queue::push(new SendEmailJob($groupAddedMail));
+        User::notifyAllAdmins(new GroupAdded($group));
         return new CreatedUserGroup($group);
     }
 

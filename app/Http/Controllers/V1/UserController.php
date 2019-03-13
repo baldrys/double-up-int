@@ -5,11 +5,11 @@ namespace App\Http\Controllers\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\UserCredetialsRequest;
 use App\Http\Transformers\V1\User\UserTransformer;
-use App\Jobs\SendEmailJob;
 use App\Mail\UserUpdated;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Queue;
+use App\Support\Enums\UserRole;
 
 class UserController extends Controller
 {
@@ -64,8 +64,7 @@ class UserController extends Controller
         $user->role = $request->get('role');
         $user->banned = $request->get('banned');
         $user->save();
-        $userUpdatedMail = new UserUpdated($admin, $oldUser, $user);
-        Queue::push(new SendEmailJob($userUpdatedMail));
+        User::notifyAllAdmins(new UserUpdated($admin, $oldUser, $user));
         return response()->json([
             "success" => true,
             "data" => [
