@@ -15,8 +15,9 @@ class AdminOnly
      * @return mixed
      */
     public function handle($request, Closure $next)
-    {
-        if ($request->user()->role == UserRole::Admin) {
+    {   
+        $me = auth("api")->user();
+        if ($me->role == UserRole::Admin) {
             return $next($request);
         }
         return response()->json([

@@ -15,7 +15,8 @@ class StopBanned
      */
     public function handle($request, Closure $next)
     {
-        if (!$request->user()->banned) {
+        $me = auth("api")->user();
+        if (!$me->banned) {
             return $next($request);
         }
         return response()->json([

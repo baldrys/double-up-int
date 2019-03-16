@@ -38,13 +38,13 @@ class UserGroupsControllerTest extends TestCase
      */
     public function GetGroups_DataCorrect_Success()
     {
-        $numberOfGroups = 3;
+        $numberOfGroupsToCreate = 3;
         $user = factory(User::class)->create();
-        $groups = factory(UserGroup::class, $numberOfGroups)->create();
+        $groups = factory(UserGroup::class, $numberOfGroupsToCreate)->create();
         $user->groups()->attach($groups);
         $response = $this->get('api/v0/user/'.$user->id.'/groups');
         $response->assertStatus(200);
-        $response->assertJsonCount($numberOfGroups, 'data.groups');
+        $response->assertJsonCount($numberOfGroupsToCreate, 'data.groups');
     }
 
 
