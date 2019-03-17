@@ -1,0 +1,246 @@
+swagger: "2.0"
+info:
+  description: "Groups API"
+  version: "1.0.0"
+  title: "Groups API"
+host: "localhost"
+basePath: "/api/v1"
+tags:
+- name: "User authorization"
+  description: "Operations about athorization user"
+- name: "User credentials"
+  description: "Operations about user credentials"
+schemes:
+- "https"
+- "http"
+paths:
+  /auth/login:
+    get:
+      tags:
+      - "User authorization"
+      summary: "Authorize user by sending him the api-token"
+      description: ""
+      operationId: "login"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "email"
+        type: "string"
+        description: "Email of the user"
+        required: true
+      - in: "query"
+        name: "password"
+        type: "string"
+        description: "Password of the user"
+        required: true
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              data:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "d12hjHduh12dh21"
+        401:
+          description: "Unauthorized"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: False
+              message:
+                type: string
+                example: "Unauthorized"
+  /auth/logout:
+    get:
+      tags:
+        - "User authorization"
+      summary: "Loging out for user by rolling up the api-token"
+      description: ""
+      operationId: "logout"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "api_token"
+        type: "string"
+        description: "Api token of the user"
+        required: true
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+        404:
+          description: "Not found"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: False
+              message:
+                type: string
+                example: "Пользователь не найден"
+  /users:
+    get:
+      tags:
+        - "User credentials"
+      summary: "Getting list of user's credentials"
+      description: ""
+      operationId: "getUsersCredentials"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "api_token"
+        type: "string"
+        description: "Api token of the user"
+        required: true
+      - in: "query"
+        name: "page"
+        type: "integer"
+        description: "Page"
+        required: false
+        default: 1
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              date:
+                type: object
+                properties:
+                  users:
+                    "$ref": "#/definitions/ArrayOfUsers"
+        401:
+          description: "Unauthorized"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: False
+              message:
+                type: string
+                example: "Unauthorized"          
+  /user/{userId}:
+    patch:
+      tags:
+        - "User credentials"
+      summary: "Getting list of user's credentials"
+      description: ""
+      operationId: "updateUsersCredentials"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "userId"
+        type: "integer"
+        description: "Id of the user that will be updated"
+        required: true
+      - in: "query"
+        name: "api_token"
+        type: "string"
+        description: "Api token of the user"
+        required: true
+      - in: "query"
+        name: "name"
+        type: "string"
+        description: "New name of the user"
+        required: true
+      - in: "query"
+        name: "role"
+        type: "string"
+        description: "New role of the user"
+        required: true
+      - in: "query"
+        name: "banned"
+        type: "boolean"
+        description: "New user's status"
+        required: true
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              date:
+                type: object
+                properties:
+                  user:
+                    "$ref": "#/definitions/User"
+        401:
+          description: "Unauthorized"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: False
+              message:
+                type: string
+                example: "Unauthorized"            
+definitions:
+  User:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+      name:
+        type: "string"
+        example: "My name"
+      email:
+        type: "string"
+        example: "someemail1@bk.ru"
+      role:
+        type: "string"
+        example: "User"
+      banned:
+        type: "boolean"
+        example: False  
+  ArrayOfUsers:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        name:
+          type: "string"
+        email:
+          type: "string"
+        role:
+          type: "string"
+        banned:
+          type: "boolean"
+    example:
+      - id: 1
+        name: "Ivanov Ivan"
+        email: "someemail1@bk.ru"
+        role: "User"
+        banned: True
+      - id: 2
+        name: "Ivanov Ivan"
+        email: "someemail1@bk.ru"
+        role: "Admin"
+        banned: False

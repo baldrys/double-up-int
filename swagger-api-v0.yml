@@ -1,0 +1,238 @@
+swagger: "2.0"
+info:
+  description: "Groups API"
+  version: "1.0.0"
+  title: "Groups API"
+host: "localhost"
+basePath: "/api/v0"
+tags:
+- name: "Group"
+  description: "Operations about group"
+schemes:
+- "https"
+- "http"
+paths:
+  /users/group:
+    post:
+      tags:
+      - "Group"
+      summary: "Add a new group"
+      description: ""
+      operationId: "addGroup"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "name"
+        type: "string"
+        description: "Group name that needs to be added"
+        required: true
+      responses:
+        201:
+          description: "success"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              data:
+                type: object
+                properties:
+                  created_group:
+                    $ref: "#/definitions/UserGroup"
+        422:
+          description: "Unprocessable Entity"
+  /user/{userId}/groups:
+    get:
+      tags:
+      - "Group"
+      summary: "Get a list of user's groups"
+      description: ""
+      operationId: "getGroups"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "userId"
+        type: "integer"
+        format: "int64"
+        description: "User Id"
+        required: true
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              data:
+                type: object
+                properties:
+                  groups:
+                    $ref: "#/definitions/ArrayOfGroups"
+        404:
+          description: "Not found"
+  /users/groups/{groupId}:
+    delete:
+      tags:
+      - "Group"
+      summary: "Delete a group"
+      description: ""
+      operationId: "deleteGroup"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "groupId"
+        type: "integer"
+        format: "int64"
+        description: "Group Id"
+        required: true
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: True
+        404:
+          description: "Not found"
+    patch:
+        tags:
+        - "Group"
+        summary: "Update group's name"
+        description: ""
+        operationId: "updateGroup"
+        produces:
+        - "application/json"
+        parameters:
+        - in: "path"
+          name: "groupId"
+          type: "integer"
+          format: "int64"
+          description: "Group Id"
+          required: true
+        responses:
+          200:
+            description: "success"
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  type: object
+                  properties:
+                    created_group:
+                      $ref: "#/definitions/UserGroup"
+          404:
+            description: "Not found"        
+  /user/{userId}/group/{groupId}:
+    post:
+      tags:
+      - "Group"
+      summary: "Add user to the group"
+      description: ""
+      operationId: "addUserToGroup"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "userId"
+        type: "integer"
+        format: "int64"
+        description: "Id of the user that wants to be in a group"
+        required: true
+      - in: "path"
+        name: "groupId"
+        type: "integer"
+        format: "int64"
+        description: "Desier group"
+        required: true
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: True
+        400:
+          description: "User is already in group"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: False
+        404:
+          description: "User or group is not found"
+    delete:
+        tags:
+        - "Group"
+        summary: "Delete user from group"
+        description: ""
+        operationId: "deleteUserFromGroup"
+        produces:
+        - "application/json"
+        parameters:
+        - in: "path"
+          name: "userId"
+          type: "integer"
+          format: "int64"
+          description: "User Id"
+          required: true
+        - in: "path"
+          name: "groupId"
+          type: "integer"
+          format: "int64"
+          description: "Group Id"
+          required: true  
+        responses:
+          200:
+            description: "success"
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: True
+          400:
+            description: "User is not in a group"
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: False          
+          404:
+            description: "User or group is not found"
+definitions:
+  UserGroup:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+      name:
+        type: "string"
+        example: "Group 1"
+  ArrayOfGroups:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    example:
+      - id: 1
+        name: "Group 1"
+      - id: 2
+        name: "Group 2"
