@@ -1,8 +1,8 @@
 swagger: "2.0"
 info:
-  description: "Groups API"
+  description: "Users API"
   version: "1.0.0"
-  title: "Groups API"
+  title: "Users API"
 host: "localhost"
 basePath: "/api/v1"
 tags:
